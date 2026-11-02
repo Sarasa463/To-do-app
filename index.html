@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #3978d5;
+      --primary-dark: #2864bd;
+      --background: #f4f7fb;
+      --surface: #ffffff;
+      --text: #263449;
+      --muted: #8290a3;
+      --border: #e4eaf2;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 32px 16px;
+      background: var(--background);
+      color: var(--text);
+      font-family: "Noto Sans JP", "Yu Gothic", sans-serif;
+    }
+
+    .app {
+      width: min(100%, 760px);
+      margin: 0 auto;
+    }
+
+    .app-header {
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      margin: 0 0 6px;
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: minmax(230px, 0.85fr) minmax(280px, 1.15fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      box-shadow: 0 5px 18px rgba(35, 58, 90, 0.05);
+    }
+
+    .panel-heading {
+      margin: 0 0 17px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .input-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      color: #526176;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    input,
+    textarea,
+    select {    
+      width: 100%;
+      padding: 10px 11px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fbfcfe;
+      color: var(--text);
+      font: inherit;
+      font-size: 13px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(57, 120, 213, 0.12);
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #a7b1bf;
+    }
+
+    textarea {
+      min-height: 82px;
+      resize: vertical;
+    }
+
+    .add-button {
+      width: 100%;
+      margin-top: 2px;
+      padding: 11px 14px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--primary);
+      color: #ffffff;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .add-button:hover {
+      background: var(--primary-dark);
+    }
+
+    .add-button:active {
+      transform: translateY(1px);
+    }
+
+    .task-panel {
+      min-height: 260px;
+    }
+
+    .task-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .task-panel-header .panel-heading {
+      margin: 0;
+    }
+
+    .task-count {
+      min-width: 26px;
+      padding: 4px 8px;
+      border-radius: 20px;
+      background: #edf4ff;
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .task-item {
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: #ffffff;
+    }
+
+    .task-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .task-name {
+      margin: 0;
+      overflow-wrap: anywhere;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .task-deadline {
+      margin: 7px 0 0;
+      color: var(--primary);
+      font-size: 11px;
+    }
+
+    .task-description {
+      margin: 8px 0 0;
+      color: #68778b;
+      font-size: 12px;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
+    .delete-button {
+      flex-shrink: 0;
+      padding: 5px 8px;
+      border: 1px solid #e6eaf0;
+      border-radius: 6px;
+      background: #ffffff;
+      color: #7d8999;
+      font: inherit;
+      font-size: 10px;
+      cursor: pointer;
+    }
+
+    .task-priority {
+    margin: 7px 0 0;
+    color: #526176;
+    font-size: 11px;
+    }
+
+    .delete-button:hover {
+      border-color: #f0caca;
+      background: #fff5f5;
+      color: #c34e4e;
+    }
+
+    .empty-message {
+      margin: 45px 0;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 24px 14px;
+      }
+
+      .main {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 23px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="app-header">
+      <p class="eyebrow">MY PLANNER</p>
+      <h1>タスク管理</h1>
+      <p class="subtitle">やることを整理して、ひとつずつ進めましょう。</p>
+    </header>
+
+    <section class="main">
+      <form class="panel input-panel" id="taskForm">
+        <h2 class="panel-heading">タスクを追加</h2>
+
+        <div class="form-group">
+          <label for="taskName">タスク名</label>
+          <input
+            id="taskName"
+            type="text"
+            placeholder="例：レポートを提出する"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="taskDeadline">締め切り</label>
+          <input id="taskDeadline" type="date">
+        </div>
+        
+        <div class="form-group">
+            <label for="taskPriority">優先順位</label>
+            <select id="taskPriority">
+            <option value="高">高</option>
+            <option value="中" selected>中</option>
+            <option value="低">低</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+          <label for="taskDescription">説明</label>
+          <textarea
+            id="taskDescription"
+            placeholder="タスクの詳細を入力..."
+          ></textarea>
+        </div>
+
+        <button class="add-button" type="submit">＋ タスクを追加</button>
+      </form>
+
+      <section class="panel task-panel" aria-label="入力済みタスク一覧">
+        <div class="task-panel-header">
+          <h2 class="panel-heading">入力済みタスク</h2>
+          <span class="task-count" id="taskCount">0</span>
+        </div>
+
+        <div class="task-list" id="taskList">
+          <p class="empty-message" id="emptyMessage">
+            まだタスクがありません。
+          </p>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    
+    
+// HTML要素の取得
+const taskForm = document.getElementById("taskForm");
+const taskNameInput = document.getElementById("taskName");
+const taskDeadlineInput = document.getElementById("taskDeadline");
+const taskPriorityInput = document.getElementById("taskPriority");
+const taskDescriptionInput = document.getElementById("taskDescription");
+const taskList = document.getElementById("taskList");
+const emptyMessage = document.getElementById("emptyMessage");
+const taskCount = document.getElementById("taskCount");
+
+// 保存データを取得
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+// タスクをlocalStorageに保存する
+function saveTasks() {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+// タスク一覧を画面に表示する
+function renderTasks() {
+  // 一覧を一度空にする
+  taskList.innerHTML = "";
+
+  // タスクを1つずつ表示
+  tasks.forEach((task, index) => {
+    const item = document.createElement("article");
+    item.className = "task-item";
+
+    const itemTop = document.createElement("div");
+    itemTop.className = "task-item-top";
+
+    // タスク名
+    const nameElement = document.createElement("p");
+    nameElement.className = "task-name";
+    nameElement.textContent = task.name;
+    itemTop.appendChild(nameElement);
+
+    // 削除ボタン
+    const deleteButton = document.createElement("button");
+    deleteButton.className = "delete-button";
+    deleteButton.type = "button";
+    deleteButton.textContent = "削除";
+
+    deleteButton.addEventListener("click", () => {
+      tasks.splice(index, 1);
+      saveTasks();
+      renderTasks();
+    });
+
+    itemTop.appendChild(deleteButton);
+    item.appendChild(itemTop);
+
+    // 締め切り
+    if (task.deadline) {
+      const deadlineElement = document.createElement("p");
+      deadlineElement.className = "task-deadline";
+      deadlineElement.textContent = `締め切り：${task.deadline}`;
+      item.appendChild(deadlineElement);
+      // 優先順位
+    const priorityElement = document.createElement("p");
+    priorityElement.className = "task-priority";
+    priorityElement.textContent = `優先順位：${task.priority || "未設定"}`;
+    item.appendChild(priorityElement);
+    }
+
+    // 説明
+    if (task.description) {
+      const descriptionElement = document.createElement("p");
+      descriptionElement.className = "task-description";
+      descriptionElement.textContent = task.description;
+      item.appendChild(descriptionElement);
+    }
+
+    taskList.appendChild(item);
+  });
+
+  // 件数を更新
+  taskCount.textContent = tasks.length;
+
+  // タスクがない場合の表示
+  emptyMessage.hidden = tasks.length !== 0;
+}
+// インサートソート
+function insertionSort(tasks) {
+
+  for (let i = 1; i < tasks.length; i++) {
+
+    // 挿入するタスクを取り出す
+    const key = tasks[i];
+
+    // 比較する位置
+    let j = i - 1;
+
+    // 締め切りが設定されていない場合は最後にする
+    const keyDate = key.deadline || "9999-12-31";
+
+    // keyより締め切りが遅いタスクを右に移動
+    while (
+      j >= 0 &&
+      (tasks[j].deadline || "9999-12-31") > keyDate
+    ) {
+      tasks[j + 1] = tasks[j];
+      j--;
+    }
+
+    // 適切な位置に挿入
+    tasks[j + 1] = key;
+  }
+
+  return tasks;
+}
+
+// タスク追加
+taskForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const name = taskNameInput.value.trim();
+  const deadline = taskDeadlineInput.value;
+  const description = taskDescriptionInput.value.trim();
+  const priority = taskPriorityInput.value;
+
+  if (!name) {
+    taskNameInput.focus();
+    return;
+  }
+
+ // タスクを追加
+tasks.push({
+  name: name,
+  deadline: deadline,
+  description: description,
+  priority: priority
+});
+
+// インサートソートで並び替え
+insertionSort(tasks);
+
+// 保存して画面を更新
+saveTasks();
+renderTasks();
+
+  // 保存して画面を更新
+  saveTasks();
+  renderTasks();
+
+  // 入力欄をリセット
+  taskForm.reset();
+  taskNameInput.focus();
+});
+
+// ページを開いたときに保存済みタスクを表示
+insertionSort(tasks);
+saveTasks();
+renderTasks();
+
+  </script>
+</body>
+</html>
